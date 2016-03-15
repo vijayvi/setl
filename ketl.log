@@ -1,0 +1,72 @@
+INFO:   null (null) [main]: chrono-[test] elapsed time: 2ms
+INFO:   null (null) [main]: extracting from sql: select sql
+INFO:   null (null) [main]: extracting from data
+INFO:   null (null) [main]: extracting from CSV: null
+WARNING:null (null) [main]: invalid source sql/csv configuration. skipping ETL.
+INFO:   null (null) [main]: extract config is missing. skipping extraction
+INFO:   null (null) [main]: extract config is missing. skipping extraction
+INFO:   null (null) [main]: extract config is missing. skipping extraction
+INFO:   null (null) [main]: extract config is missing. skipping extraction
+ERROR:  null (null) [main]: error in extraction: null
+INFO:   null (null) [main]: extract config is missing. skipping extraction
+INFO:   null (null) [main]: extract config is missing. skipping extraction
+INFO:   null (null) [main]: Extractor is starting...
+INFO:   null (null) [main]: Extractor is completed. result=true
+INFO:   null (null) [main]: starting Extractor thread
+INFO:   null (null) [extractor]: Extractor is starting...
+INFO:   null (null) [extractor]: Extractor is completed. result=false
+INFO:   null (null) [main]: starting Loader threads. noOfThreads=6
+INFO:   null (null) [Thread-1]: Loader completed (total processed: 0).
+INFO:   null (null) [Thread-2]: Loader completed (total processed: 0).
+INFO:   null (null) [Thread-3]: Loader completed (total processed: 0).
+INFO:   null (null) [Thread-4]: Loader completed (total processed: 0).
+INFO:   null (null) [Thread-5]: Loader completed (total processed: 0).
+INFO:   null (null) [Thread-6]: Loader completed (total processed: 0).
+INFO:   null (null) [main]: chrono-[Processor] elapsed time: 14ms
+INFO:   null (null) [main]: starting Extractor thread
+INFO:   null (null) [extractor]: Extractor is starting...
+INFO:   null (null) [extractor]: Extractor is completed. result=false
+INFO:   null (null) [main]: starting Loader threads. noOfThreads=6
+INFO:   null (null) [Thread-7]: Loader completed (total processed: 0).
+INFO:   null (null) [Thread-8]: Loader completed (total processed: 0).
+INFO:   null (null) [Thread-9]: Loader completed (total processed: 0).
+INFO:   null (null) [Thread-10]: Loader completed (total processed: 0).
+INFO:   null (null) [Thread-11]: Loader completed (total processed: 0).
+INFO:   null (null) [Thread-12]: Loader completed (total processed: 0).
+INFO:   null (null) [main]: chrono-[Processor] elapsed time: 4ms
+INFO:   null (null) [main]: starting Extractor thread
+INFO:   null (null) [extractor]: Extractor is starting...
+INFO:   null (null) [extractor]: Extractor is completed. result=false
+INFO:   null (null) [main]: starting Extractor thread
+INFO:   null (null) [extractor]: Extractor is starting...
+INFO:   null (null) [extractor]: Extractor is completed. result=false
+INFO:   null (null) [main]: starting Loader threads. noOfThreads=6
+INFO:   null (null) [main]: starting Loader threads. noOfThreads=3
+ERROR:  null (null) [main]: Invalid definition file: invalid.json (No such file or directory)
+ERROR:  null (null) [main]: Invalid definition file: null
+INFO:   null () [main]: Processing null
+INFO:   null () [main]: starting Extractor thread
+INFO:   null () [extractor]: Extractor is starting...
+INFO:   null () [extractor]: Extractor is completed. result=false
+INFO:   null () [main]: starting Loader threads. noOfThreads=6
+INFO:   null () [Thread-23]: Loader completed (total processed: 0).
+INFO:   null () [Thread-24]: Loader completed (total processed: 0).
+INFO:   null () [Thread-25]: Loader completed (total processed: 0).
+INFO:   null () [Thread-26]: Loader completed (total processed: 0).
+INFO:   null () [Thread-27]: Loader completed (total processed: 0).
+INFO:   null () [Thread-28]: Loader completed (total processed: 0).
+INFO:   null () [main]: chrono-[Processor] elapsed time: 3ms
+INFO:   null () [main]: Found: 0, Processed: 0
+ERROR:  null () [main]: Invalid or blank definition
+WARNING:null () [main]: buildSelectColumns failed: null
+WARNING:null () [main]: insertRow failed: null
+WARNING:null () [main]: insertRow failed: Invalid state
+INFO:   null () [main]: Loader completed (total processed: 2).
+INFO:   null () [main]: Loader completed (total processed: 1).
+INFO:   null (null) [main]: Loader completed (total processed: 2).
+WARNING:null (null) [main]: return value error: null
+WARNING:null (null) [main]: updateRow failed: null
+WARNING:null (null) [main]: updateRow failed: Invalid state
+ERROR:  null (null) [main]: error getting metaColumns:
+ERROR:  null (null) [main]: error getting metaColumns:
+ERROR:  null (null) [main]: error getting rowSet:

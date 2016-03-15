@@ -52,8 +52,8 @@ public class TransformerTest {
 
         doReturn("select id from port where code = 'NYC'").when(transformer.interpolator).interpolate(c1.getSql(), row);
         doReturn("select id from ref where code = 'XX'").when(transformer.interpolator).interpolate(c2.getSql(), row);
-        doReturn(123).when(transformer.sqlRunner).getValue("select id from port where code = 'NYC'", toDS);
-        doReturn(456).when(transformer.sqlRunner).getValue("select id from ref where code = 'XX'", toDS);
+        doReturn(123).when(transformer.sqlRunner).getSingleValue("select id from port where code = 'NYC'", toDS);
+        doReturn(456).when(transformer.sqlRunner).getSingleValue("select id from ref where code = 'XX'", toDS);
 
         transformer.transform(row);
 
@@ -83,7 +83,7 @@ public class TransformerTest {
         col.setCache(true);
 
         doReturn("select id from table where col = 999").when(transformer.interpolator).interpolate(col.getSql(), row);
-        doReturn(123).when(transformer.sqlRunner).getValue(anyString(), any(DS.class));
+        doReturn(123).when(transformer.sqlRunner).getSingleValue(anyString(), any(DS.class));
 
         transformer.transformSql(row, col);
         assertEquals(row.get("port_id").toString(), "123", "port_id");
@@ -91,7 +91,7 @@ public class TransformerTest {
         // cached
         row = new HashMap<>();
         doReturn("select id from table where col = 999").when(transformer.interpolator).interpolate(col.getSql(), row);
-        doReturn(123).when(transformer.sqlRunner).getValue(anyString(), any(DS.class));
+        doReturn(123).when(transformer.sqlRunner).getSingleValue(anyString(), any(DS.class));
         transformer.transformSql(row, col);
         assertEquals(row.get("port_id").toString(), "123", "port_id");
         assertEquals(transformer.cache.size(), 1, "cache size");

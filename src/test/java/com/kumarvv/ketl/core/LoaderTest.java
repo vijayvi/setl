@@ -3,7 +3,6 @@ package com.kumarvv.ketl.core;
 import com.kumarvv.ketl.mocks.JdbcRowSetMock;
 import com.kumarvv.ketl.model.*;
 import com.kumarvv.ketl.utils.Interpolator;
-import com.kumarvv.ketl.utils.KetlRowSetFactory;
 import com.kumarvv.ketl.utils.RowSetUtil;
 import com.kumarvv.ketl.utils.SqlRunner;
 import org.testng.annotations.BeforeMethod;
@@ -39,7 +38,6 @@ public class LoaderTest {
         loader.interpolator = mock(Interpolator.class);
         loader.sqlRunner = mock(SqlRunner.class);
         loader.rowSetUtil = mock(RowSetUtil.class);
-        loader.rowSetFactory = mock(KetlRowSetFactory.class);
 
         toDS = mock(DS.class);
         doReturn(toDS).when(def).getToDS();
@@ -51,7 +49,7 @@ public class LoaderTest {
         loader.interpolator = null;
         loader.sqlRunner = null;
         loader.rowSetUtil = null;
-        loader.rowSetFactory = null;
+        loader.rowSetUtil = null;
 
         Row row1 = spy(new Row(new HashMap<>(), new HashMap<>()));
         Row row2 = spy(new Row(new HashMap<>(), new HashMap<>()));
@@ -358,7 +356,7 @@ public class LoaderTest {
         col = new Column();
         col.setName("code");
         col.setGenerator("select emp_seq.nextval from dual");
-        doReturn(123).when(loader.sqlRunner).getValue(anyString(), any(DS.class));
+        doReturn(123).when(loader.sqlRunner).getSingleValue(anyString(), any(DS.class));
         loader.setColumnValue(load, row, col, jrs);
         assertEquals(jrs.getObject("code").toString(), "123", "generator");
     }
@@ -415,7 +413,7 @@ public class LoaderTest {
         col.setName("dept_id");
         col.setSql("select id from dept where code = :dept");
         doReturn("select id from dept where code = 'IT'").when(loader.interpolator).interpolate(col.getSql(), row.getData());
-        doReturn(123).when(loader.sqlRunner).getValue("select id from dept where code = 'IT'", toDS);
+        doReturn(123).when(loader.sqlRunner).getSingleValue("select id from dept where code = 'IT'", toDS);
         val = loader.getColumnValue(load, row, col);
         assertEquals(val.toString(), "123", "sql");
 
@@ -517,7 +515,7 @@ public class LoaderTest {
 
         ResultSetMetaData meta = mockMeta();
         JdbcRowSet jrs = mock(JdbcRowSet.class);
-        doReturn(jrs).when(loader.rowSetFactory).getRowSet(any(DS.class));
+        doReturn(jrs).when(loader.rowSetUtil).getRowSet(any(DS.class));
         doReturn(meta).when(jrs).getMetaData();
 
         String result = loader.buildSelectColumns(load);
@@ -528,7 +526,7 @@ public class LoaderTest {
     public void testBuildSelectColumnsNulls() throws SQLException {
         ResultSetMetaData meta = mockMeta();
         JdbcRowSet jrs = mock(JdbcRowSet.class);
-        doReturn(jrs).when(loader.rowSetFactory).getRowSet(any(DS.class));
+        doReturn(jrs).when(loader.rowSetUtil).getRowSet(any(DS.class));
         doReturn(meta).when(jrs).getMetaData();
 
         String result = loader.buildSelectColumns(null);
@@ -539,7 +537,7 @@ public class LoaderTest {
         assertEquals(result, "", "null2");
 
         load.setTable("emp");
-        doThrow(SQLException.class).when(loader.rowSetFactory).getRowSet(any(DS.class));
+        doThrow(SQLException.class).when(loader.rowSetUtil).getRowSet(any(DS.class));
         result = loader.buildSelectColumns(load);
         assertEquals(result, "", "exception");
     }

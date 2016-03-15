@@ -1,14 +1,31 @@
+/**
+ * Copyright (c) 2016 Vijay Vijayaram
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial
+ * portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
+ * THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 package com.kumarvv.ketl.core;
 
 import com.kumarvv.ketl.model.Def;
 import com.kumarvv.ketl.model.Row;
 import com.kumarvv.ketl.model.Status;
 import com.kumarvv.ketl.utils.CsvParser;
-import com.kumarvv.ketl.utils.KetlLogger;
-import com.kumarvv.ketl.utils.KetlRowSetFactory;
 import com.kumarvv.ketl.utils.RowSetUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.pmw.tinylog.Logger;
 
 import javax.sql.rowset.JdbcRowSet;
 import java.sql.ResultSet;
@@ -21,8 +38,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.function.Consumer;
 
 public class Extractor implements Runnable {
-    private static final KetlLogger log = KetlLogger.getLogger(Extractor.class);
-
     final BlockingQueue<Row> queue;
     final Status status;
     final Def def;
@@ -30,7 +45,6 @@ public class Extractor implements Runnable {
     final Consumer<Boolean> doneCallback;
 
     RowSetUtil rowSetUtil;
-    KetlRowSetFactory rowSetFactory;
 
     public Extractor(BlockingQueue<Row> queue,
                      Def def,
@@ -42,7 +56,6 @@ public class Extractor implements Runnable {
         this.fromColumns = new HashMap<>();
         this.doneCallback = doneCallback;
         this.rowSetUtil = RowSetUtil.getInstance();
-        this.rowSetFactory = KetlRowSetFactory.getInstance();
     }
 
     /**
@@ -51,10 +64,11 @@ public class Extractor implements Runnable {
     @Override
     public void run() {
         boolean result = true;
+        Logger.info("Extractor is starting...");
         try {
             result = extract();
         } finally {
-            System.out.printf("Extractor is done.\n");
+            Logger.info("Extractor is completed. result={}", result);
             doneCallback.accept(result);
         }
     }
@@ -76,13 +90,17 @@ public class Extractor implements Runnable {
 
         boolean result = false;
         if (StringUtils.isNotEmpty(def.getExtract().getSql())) {
+            Logger.info("extracting from sql: {}", def.getExtract().getSql());
             result = extractDataFromSql();
         } else if (CollectionUtils.isNotEmpty(def.getExtract().getData())) {
+            Logger.info("extracting from data");
             result = extractDataFromData();
         } else if (def.getExtract().getCsv() != null) {
+            Logger.info("extracting from CSV: {}", def.getExtract().getCsv().getFilePath());
             result = extractDataFromCsv();
         } else {
-            log.warn(def, "invalid source sql/csv configuration. skipping ETL.");
+            Logger.warn("invalid source sql/csv configuration. skipping ETL.");
+            return false;
         }
 
         return result;
@@ -95,6 +113,7 @@ public class Extractor implements Runnable {
      */
     boolean extractDataFromData() {
         if (def.getExtract() == null || def.getExtract().getData() == null) {
+            Logger.info("extract config is missing. skipping extraction");
             return true;
         }
 
@@ -112,6 +131,7 @@ public class Extractor implements Runnable {
      */
     boolean extractDataFromCsv() {
         if (def.getExtract() == null || def.getExtract().getCsv() == null) {
+            Logger.info("extract config is missing. skipping extraction");
             return true;
         }
 
@@ -132,11 +152,12 @@ public class Extractor implements Runnable {
      */
     boolean extractDataFromSql() {
         if (def.getExtract() == null || StringUtils.isEmpty(def.getExtract().getSql())) {
+            Logger.info("extract config is missing. skipping extraction");
             return true;
         }
         String sql = def.getExtract().getSql();
 
-        try (JdbcRowSet jrs = rowSetFactory.getRowSet(def.getFromDS())) {
+        try (JdbcRowSet jrs = rowSetUtil.getRowSet(def.getFromDS())) {
             jrs.setCommand(sql);
             jrs.execute();
             jrs.setFetchDirection(ResultSet.FETCH_FORWARD);
@@ -147,7 +168,8 @@ public class Extractor implements Runnable {
             parseData(jrs, meta);
             return true;
         } catch (Exception e) {
-            log.error(e.getMessage());
+            Logger.error("error in extraction: {}", e.getMessage());
+            Logger.debug(e);
             return false;
         }
     }

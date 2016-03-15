@@ -1,7 +1,7 @@
 package com.kumarvv.ketl.core;
 
 import com.kumarvv.ketl.model.*;
-import com.kumarvv.ketl.utils.KetlRowSetFactory;
+import com.kumarvv.ketl.utils.RowSetUtil;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -24,7 +24,7 @@ public class ExtractorTest {
     Extract extract;
     BlockingQueue<Row> queue;
     Status status;
-    KetlRowSetFactory rowSetFactory;
+    RowSetUtil rowSetUtil;
 
     boolean allDone = false;
 
@@ -37,7 +37,7 @@ public class ExtractorTest {
         status = spy(new Status((c) -> {}));
 
         extractor = spy(new Extractor(queue, def, status, (b) -> { status.markAsDone(); }));
-        extractor.rowSetFactory = mock(KetlRowSetFactory.class);
+        extractor.rowSetUtil = spy(RowSetUtil.class);
     }
 
     @Test
@@ -159,7 +159,7 @@ public class ExtractorTest {
         doReturn(123).when(jrs).getObject(1);
         doReturn("NY").when(jrs).getObject(2);
         doReturn("New York").when(jrs).getObject(3);
-        doReturn(jrs).when(extractor.rowSetFactory).getRowSet(any(DS.class));
+        doReturn(jrs).when(extractor.rowSetUtil).getRowSet(any(DS.class));
 
         ResultSetMetaData meta = mock(ResultSetMetaData.class);
         doReturn(3).when(meta).getColumnCount();
@@ -182,7 +182,7 @@ public class ExtractorTest {
     @Test
     public void testExtractDataFromSqlException() throws SQLException {
         doReturn("select 1 from dual").when(extract).getSql();
-        doThrow(SQLException.class).when(extractor.rowSetFactory).getRowSet(any(DS.class));
+        doThrow(SQLException.class).when(extractor.rowSetUtil).getRowSet(any(DS.class));
         boolean result = extractor.extractDataFromSql();
         assertEquals(result, false, "exception");
     }

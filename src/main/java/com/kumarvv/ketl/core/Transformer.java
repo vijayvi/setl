@@ -1,21 +1,37 @@
+/**
+ * Copyright (c) 2016 Vijay Vijayaram
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial
+ * portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
+ * THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 package com.kumarvv.ketl.core;
 
 import com.kumarvv.ketl.model.Column;
 import com.kumarvv.ketl.model.Def;
 import com.kumarvv.ketl.utils.Interpolator;
 import com.kumarvv.ketl.utils.KetlCache;
-import com.kumarvv.ketl.utils.KetlLogger;
 import com.kumarvv.ketl.utils.SqlRunner;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.pmw.tinylog.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 public class Transformer {
-    private static final KetlLogger log = KetlLogger.getLogger(Transformer.class);
-
     private final Def def;
 
     protected KetlCache cache;
@@ -44,7 +60,7 @@ public class Transformer {
 
         final Set<Column> columns = def.getTransform().getColumns();
         if (CollectionUtils.isEmpty(columns)) {
-            log.info("no columns in transformation");
+            Logger.trace("no columns in transform config");
             return new HashMap<>();
         }
 
@@ -68,7 +84,7 @@ public class Transformer {
         if (col.getCache() && cache.exists(sql)) {
             row.put(col.getName(), cache.get(sql));
         } else {
-            Object v = sqlRunner.getValue(sql, def.getToDS());
+            Object v = sqlRunner.getSingleValue(sql, def.getToDS());
             row.put(col.getName(), v);
             cache.set(sql, v);
         }

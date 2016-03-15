@@ -1,3 +1,21 @@
+/**
+ * Copyright (c) 2016 Vijay Vijayaram
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial
+ * portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
+ * THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 package com.kumarvv.ketl.core;
 
 import com.kumarvv.ketl.enums.SqlType;
@@ -6,6 +24,8 @@ import com.kumarvv.ketl.utils.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.pmw.tinylog.Logger;
+import org.pmw.tinylog.LoggingContext;
 
 import javax.sql.rowset.JdbcRowSet;
 import java.sql.ResultSetMetaData;
@@ -27,7 +47,6 @@ public class Loader implements Runnable {
     protected Interpolator interpolator;
     protected SqlRunner sqlRunner;
     protected RowSetUtil rowSetUtil;
-    protected KetlRowSetFactory rowSetFactory;
     protected Transformer transformer;
 
     protected int processed = 0;
@@ -44,7 +63,6 @@ public class Loader implements Runnable {
         this.interpolator = Interpolator.getInstance();
         this.sqlRunner = SqlRunner.getInstance();
         this.rowSetUtil = RowSetUtil.getInstance();
-        this.rowSetFactory = KetlRowSetFactory.getInstance();
         transformer = new Transformer(def);
 
         this.systemVar = SystemVar.getInstance();
@@ -76,7 +94,7 @@ public class Loader implements Runnable {
             processed++;
         }
 
-        System.out.printf("Loader[%s] is done (total: %d).\n", id, processed);
+        Logger.info("Loader completed (total processed: {}).", processed);
     }
 
     protected Row getRowFromQueue() {
@@ -96,8 +114,9 @@ public class Loader implements Runnable {
             return false;
         }
 
-        try (JdbcRowSet jrs = rowSetFactory.getRowSet(def.getToDS())) {
+        try (JdbcRowSet jrs = rowSetUtil.getRowSet(def.getToDS())) {
             for (Load load: def.getLoads()) {
+                LoggingContext.put("loadTable", load.getTable());
                 insertOrUpdateRow(load, row, jrs);
             }
             return true;
@@ -143,7 +162,8 @@ public class Loader implements Runnable {
                 Object rcv = jrs.getObject(rc);
                 row.getData().put("rc_" + load.getTable() + "_" + rc, rcv);
             } catch (SQLException sqle) {
-                System.out.println("return value error: " + sqle.getMessage());
+                Logger.warn("return value error: " + sqle.getMessage());
+                Logger.trace(sqle);
             }
         }
         return true;
@@ -184,7 +204,8 @@ public class Loader implements Runnable {
             jrs.updateRow();
             return true;
         } catch (SQLException e) {
-            System.out.println("UPDATE FAILED: " + e.getMessage());
+            Logger.warn("updateRow failed: " + e.getMessage());
+            Logger.trace(e);
             return false;
         }
     }
@@ -214,8 +235,9 @@ public class Loader implements Runnable {
             jrs.insertRow();
             jrs.first();
             return true;
-        } catch (SQLException e) {
-            System.out.println("INSERT FAILED: " + e.getMessage());
+        } catch (SQLException sqle) {
+            Logger.warn("insertRow failed: " + sqle.getMessage());
+            Logger.trace(sqle);
             return false;
         }
     }
@@ -235,7 +257,7 @@ public class Loader implements Runnable {
         }
         Object val = null;
         if (isNotEmpty(column.getGenerator())) {
-            val = sqlRunner.getValue(column.getGenerator(), def.getToDS());
+            val = sqlRunner.getSingleValue(column.getGenerator(), def.getToDS());
         } else {
             val = getColumnValue(load, row, column);
         }
@@ -265,7 +287,7 @@ public class Loader implements Runnable {
             val = row.get(column.getRef());
         } else if (isNotEmpty(column.getSql()) && row != null  && MapUtils.isNotEmpty(row.getData())) {
             String sql = interpolator.interpolate(column.getSql(), row.getData());
-            val = sqlRunner.getValue(sql, def.getToDS());
+            val = sqlRunner.getSingleValue(sql, def.getToDS());
         }
 
         if (val == null) {
@@ -362,7 +384,7 @@ public class Loader implements Runnable {
         sql.append("SELECT * FROM ").append(load.getTable()).append(" WHERE 1>2");
 
         final Set<String> cols = new LinkedHashSet<>();
-        try (JdbcRowSet cjrs = rowSetFactory.getRowSet(def.getToDS())) {
+        try (JdbcRowSet cjrs = rowSetUtil.getRowSet(def.getToDS())) {
             cjrs.setCommand(sql.toString());
             cjrs.execute();
             ResultSetMetaData meta = cjrs.getMetaData();
@@ -370,7 +392,8 @@ public class Loader implements Runnable {
                 cols.add(meta.getColumnName(i).toLowerCase());
             }
         } catch (SQLException sqle) {
-            System.out.println("Error - " + sqle.getMessage());
+            Logger.warn("buildSelectColumns failed: " + sqle.getMessage());
+            Logger.trace(sqle);
         }
         String colStr = StringUtils.join(cols, ", ");
         return colStr;

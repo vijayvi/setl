@@ -1,40 +1,26 @@
+/**
+ * Copyright (c) 2016 Vijay Vijayaram
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial
+ * portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
+ * THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 package com.kumarvv.ketl.utils;
 
 public final class Constants {
 	
-	public static final String DBCOPY_PROPERTIES = "sbcopy.properties";
-
-	public static final String SRC_DB_URL = "src.url";
-	public static final String SRC_DB_USERNAME = "src.username";
-	public static final String SRC_DB_PASSWORD = "src.password";
-
-	public static final String DEST_DB_URL = "dest.url";
-	public static final String DEST_DB_USERNAME = "dest.username";
-	public static final String DEST_DB_PASSWORD = "dest.password";
-
-	public static final String TABLE_DIR = "table.dir";
-	public static final String TABLE = "table";
-
-	public static final String COMMA = ",";
-	public static final String SPACE = " ";
-	public static final String TAB = "\t";
-	public static final String SQUARE_OPEN = "["; 
-	public static final String SQUARE_CLOSE = "]"; 
-	public static final String CURLY_OPEN = "{"; 
-	public static final String CURLY_CLOSE = "}"; 
-	public static final String ROUND_OPEN = "("; 
-	public static final String ROUND_CLOSE = ")";
-
 	public static final String QUOTE_SINGLE = "'";
 	public static final String COLON = ":";
-
-	public static final char REF_SRC_NAME = '&';
-	public static final char REF_DEST_NAME = '#';
-	public static final char REF_VAR = '@';
-
-	public static final String VAR_NOW = "@now";
-	public static final String VAR_NULL = "@null";
-	
-	public static final String DONE = "__DONE_";
 
 }

@@ -1,3 +1,21 @@
+/**
+ * Copyright (c) 2016 Vijay Vijayaram
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ * and associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial
+ * portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
+ * THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 package com.kumarvv.ketl;
 
 import com.kumarvv.ketl.core.KetlProcessor;
@@ -7,6 +25,8 @@ import com.kumarvv.ketl.model.Status;
 import com.kumarvv.ketl.utils.Chrono;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.pmw.tinylog.Logger;
+import org.pmw.tinylog.LoggingContext;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -14,6 +34,11 @@ import java.nio.file.Paths;
 public class Ketl {
     private static final int STATUS_EVERY = 1000;
 
+    /**
+     * load definition file
+     * @param filePath
+     * @return
+     */
     protected Def loadFile(String filePath) {
         ObjectMapper mapper = new ObjectMapper();
         try {
@@ -22,11 +47,18 @@ public class Ketl {
             initCsvPaths(def, path);
             return def;
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.error("Invalid definition file: {}", e.getMessage());
+            Logger.trace(e);
         }
         return null;
     }
 
+    /**
+     * init csv paths
+     *
+     * @param def
+     * @param defPath
+     */
     protected void initCsvPaths(final Def def, Path defPath) {
         if (def.getExtract().getCsv() != null && StringUtils.isNotEmpty(def.getExtract().getCsv().getFile())) {
             Path csvPath = defPath.getParent().resolve(def.getExtract().getCsv().getFile()).normalize();
@@ -45,28 +77,22 @@ public class Ketl {
         }
     }
 
-    protected void printStatEvery(Status status) {
-        if (status.getRowsFound() % STATUS_EVERY == 0) {
-            System.out.println("Found: " + status.getRowsFound() + ", Processed: " + status.getRowsProcessed());
+    /**
+     * start the process
+     * @param def
+     */
+    protected void start(final Def def) {
+        if (def == null) {
+            Logger.error("Invalid or blank definition");
+            return;
         }
-    }
 
-    protected void printStat(Status status) {
-        System.out.println("Found: " + status.getRowsFound() + ", Processed: " + status.getRowsProcessed());
-    }
+        LoggingContext.put("defName", def.getName());
+        LoggingContext.put("loadTable", "");
 
-    public static void main(String[] args) {
-        Chrono kch = Chrono.start("all");
-//        String defPath = "src/main/resources/test.json";
-//        String defPath = "src/main/resources/csv.json";
-        String defPath = "/Users/Vijay/Dev/projects/ktacs/java/ktacs/ketl/master/country.json";
+        Logger.info("Processing " + def.getName());
 
-        Ketl me = new Ketl();
-        Def def = me.loadFile(defPath);
-
-        System.out.println("Processing " + def.getName());
-
-        Status status = new Status((s) -> me.printStatEvery(s));
+        Status status = new Status((s) -> printStatEvery(s));
         KetlProcessor processor = new KetlProcessor(status, def);
         Thread t = new Thread(processor);
         t.run();
@@ -75,9 +101,30 @@ public class Ketl {
             t.join();
         } catch (InterruptedException ie) {}
 
-        me.printStat(status);
+        printStat(status);
+    }
+
+    protected void printStatEvery(Status status) {
+        if (status.getRowsFound() % STATUS_EVERY == 0) {
+            Logger.info("Found: {}, Processed: {}", status.getRowsFound(), status.getRowsProcessed());
+        }
+    }
+
+    protected void printStat(Status status) {
+        Logger.info("Found: {}, Processed: {}", status.getRowsFound(), status.getRowsProcessed());
+    }
+
+    public static void main(String[] args) {
+        Chrono kch = Chrono.start("all");
+        String defPath = "src/main/resources/test.json";
+//        String defPath = "src/main/resources/csv.json";
+//        String defPath = "/Users/Vijay/Dev/projects/ktacs/java/ktacs/ketl/master/country.json";
+
+        Ketl me = new Ketl();
+        Def def = me.loadFile(defPath);
+        me.start(def);
         kch.stop();
-        System.out.println("ALL DONE!");
+        Logger.info("ALL DONE!");
     }
 
 }
