@@ -53,6 +53,14 @@ public class Setl {
             loadDataStores(def);
 
             LoggingContext.put("def", StringUtils.defaultIfBlank(def.getName(), ""));
+
+            if (def.getFromDS() != null) {
+                Logger.info("fromDS = {}@{}", def.getFromDS().getUsername(), def.getFromDS().getUrl());
+            }
+            if (def.getToDS() != null) {
+                Logger.info("toDS = {}@{}", def.getToDS().getUsername(), def.getToDS().getUrl());
+            }
+
             return def;
         } catch (Exception e) {
             Logger.error("Invalid definition file: {}", e.getMessage());
@@ -145,7 +153,7 @@ public class Setl {
             t.join();
         } catch (InterruptedException ie) {}
 
-        printStat(status);
+        printStatAll(status);
     }
 
     /**
@@ -162,8 +170,9 @@ public class Setl {
      * print stats
      * @param status
      */
-    protected void printStat(Status status) {
-        Logger.info("Found: {}, Processed: {}", status.getRowsFound(), status.getRowsProcessed());
+    protected void printStatAll(Status status) {
+        Logger.info("Found: {}, Processed: {}, failed: {}, inserted: {}, updated: {}",
+                status.getRowsFound(), status.getRowsProcessed(), status.getRowsFailed(), status.getRowsInserted(), status.getRowsUpdated());
     }
 
     /**

@@ -102,9 +102,12 @@ public class Loader implements Runnable {
                 transformer.transform(row.getData());
             }
 
-            loadRow(row);
+            boolean result = loadRow(row);
             if (status != null) {
-                status.incrementProcessed();
+                status.incrementProcessed(true);
+                if (!result) {
+                    status.incrementFailed();
+                }
             }
             processed++;
         }
@@ -172,10 +175,16 @@ public class Loader implements Runnable {
         if (exists) {
             if (load.isShouldUpdate()) {
                 result = updateRow(load, row, jrs);
+                if (result && status != null) {
+                    status.incrementUpdated();
+                }
             }
         } else {
             if (load.isShouldInsert()) {
                 result = insertRow(load, row, jrs);
+                if (result && status != null) {
+                    status.incrementInserted();
+                }
             }
         }
         processReturns(load, row, jrs);

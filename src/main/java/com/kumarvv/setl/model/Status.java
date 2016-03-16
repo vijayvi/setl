@@ -63,10 +63,16 @@ public class Status {
         return rowsFailed.get();
     }
 
-    public long incrementFound() {
+    public long incrementFound(boolean callback) {
         long c =  rowsFound.incrementAndGet();
-        onUpdateCallback();
+        if (callback) {
+            onUpdateCallback();
+        }
         return c;
+    }
+
+    public long incrementFound() {
+        return incrementFound(false);
     }
 
     public long incrementProcessed(boolean callback) {
@@ -81,22 +87,40 @@ public class Status {
         return incrementProcessed(false);
     }
 
-    public long incrementInserted() {
+    public long incrementInserted(boolean callback) {
         long c = rowsInserted.incrementAndGet();
-        onUpdateCallback();
+        if (callback) {
+            onUpdateCallback();
+        }
+        return c;
+    }
+
+    public long incrementInserted() {
+        return incrementInserted(false);
+    }
+
+    public long incrementUpdated(boolean callback) {
+        long c = rowsUpdated.incrementAndGet();
+        if (callback) {
+            onUpdateCallback();
+        }
         return c;
     }
 
     public long incrementUpdated() {
-        long c = rowsUpdated.incrementAndGet();
-        onUpdateCallback();
+        return incrementUpdated(false);
+    }
+
+    public long incrementFailed(boolean callback) {
+        long c = rowsFailed.incrementAndGet();
+        if (callback) {
+            onUpdateCallback();
+        }
         return c;
     }
 
     public long incrementFailed() {
-        long c = rowsFailed.incrementAndGet();
-        onUpdateCallback();
-        return c;
+        return incrementFailed(false);
     }
 
     public boolean isDone() {
