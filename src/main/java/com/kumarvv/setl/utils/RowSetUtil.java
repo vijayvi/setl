@@ -40,27 +40,21 @@ public class RowSetUtil {
     /**
      * @return builds and returns source row set
      */
-    public JdbcRowSet getRowSet(DS ds) {
+    public JdbcRowSet getRowSet(DS ds) throws SQLException {
         if (ds == null) {
-            return null;
+            throw new SQLException("Invalid DS");
         }
 
-        try {
-            if (rowSetFactory == null) {
-                rowSetFactory = RowSetProvider.newFactory();
-            }
-
-            JdbcRowSet jrs = rowSetFactory.createJdbcRowSet();
-            jrs.setUrl(ds.getUrl());
-            jrs.setUsername(ds.getUsername());
-            jrs.setPassword(ds.getPassword());
-
-            return jrs;
-        } catch (SQLException sqle) {
-            Logger.error("error getting rowSet:", sqle.getMessage());
-            Logger.trace(sqle);
-            return null;
+        if (rowSetFactory == null) {
+            rowSetFactory = RowSetProvider.newFactory();
         }
+
+        JdbcRowSet jrs = rowSetFactory.createJdbcRowSet();
+        jrs.setUrl(ds.getUrl());
+        jrs.setUsername(ds.getUsername());
+        jrs.setPassword(ds.getPassword());
+
+        return jrs;
     }
 
     /**

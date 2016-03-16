@@ -1,0 +1,13 @@
+{
+  "fromDS": {
+    "url": "jdbc:mysql://localhost:3306/tacsp",
+    "username": "root",
+    "password": "password"
+  },
+  "toDS": {
+    "url": "jdbc:mysql://localhost:3306/kappals_dev",
+    "username": "root",
+    "password": "password"
+  }
+}
+

@@ -46,6 +46,14 @@ public class Extractor implements Runnable {
 
     RowSetUtil rowSetUtil;
 
+    /**
+     * constructor
+     *
+     * @param queue
+     * @param def
+     * @param status
+     * @param doneCallback
+     */
     public Extractor(BlockingQueue<Row> queue,
                      Def def,
                      Status status,

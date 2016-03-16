@@ -51,6 +51,14 @@ public class Loader implements Runnable {
 
     protected int processed = 0;
 
+    /**
+     * constructor
+     *
+     * @param id
+     * @param queue
+     * @param status
+     * @param def
+     */
     public Loader(String id,
                   BlockingQueue<Row> queue,
                   Status status,
@@ -70,12 +78,19 @@ public class Loader implements Runnable {
         buildSqlExistsAll();
     }
 
+    /**
+     * thread runner
+     */
     @Override
     public void run() {
         load();
     }
 
+    /**
+     * load definitions
+     */
     protected void load() {
+        Logger.debug("Loader started.");
         processed = 0;
         while(true) {
             Row row = getRowFromQueue();
@@ -93,10 +108,14 @@ public class Loader implements Runnable {
             }
             processed++;
         }
-
-        Logger.info("Loader completed (total processed: {}).", processed);
+        Logger.debug("Loader completed (total processed: {}).", processed);
     }
 
+    /**
+     * take the next available row from extractor queue
+     *
+     * @return
+     */
     protected Row getRowFromQueue() {
         if (queue == null) {
             return null;
@@ -109,6 +128,12 @@ public class Loader implements Runnable {
         return null;
     }
 
+    /**
+     * loads row into database
+     *
+     * @param row
+     * @return
+     */
     protected boolean loadRow(Row row) {
         if (def == null) {
             return false;
@@ -116,16 +141,25 @@ public class Loader implements Runnable {
 
         try (JdbcRowSet jrs = rowSetUtil.getRowSet(def.getToDS())) {
             for (Load load: def.getLoads()) {
-                LoggingContext.put("loadTable", load.getTable());
+                LoggingContext.put("load", load.getTable());
                 insertOrUpdateRow(load, row, jrs);
             }
             return true;
         } catch (SQLException sqle) {
-            sqle.printStackTrace();
+            Logger.error("Load row error: {}", sqle.getMessage());
             return false;
         }
     }
 
+    /**
+     * insert or update row into database
+     *
+     * @param load
+     * @param row
+     * @param jrs
+     * @return
+     * @throws SQLException
+     */
     protected boolean insertOrUpdateRow(Load load, Row row, JdbcRowSet jrs) throws SQLException {
         if (load == null || row == null || jrs == null) {
             return false;
@@ -148,6 +182,14 @@ public class Loader implements Runnable {
         return result;
     }
 
+    /**
+     * process and store return values from previous load
+     *
+     * @param load
+     * @param row
+     * @param jrs
+     * @return
+     */
     protected boolean processReturns(Load load, Row row, JdbcRowSet jrs) {
         if (load == null || row == null || jrs == null) {
             return false;
@@ -169,6 +211,15 @@ public class Loader implements Runnable {
         return true;
     }
 
+    /**
+     * check if row exists in target database
+     *
+     * @param load
+     * @param row
+     * @param jrs
+     * @return
+     * @throws SQLException
+     */
     protected boolean isRowExists(Load load, Row row, JdbcRowSet jrs) throws SQLException {
         if (load == null || row == null || jrs == null) {
             return false;
@@ -392,7 +443,7 @@ public class Loader implements Runnable {
                 cols.add(meta.getColumnName(i).toLowerCase());
             }
         } catch (SQLException sqle) {
-            Logger.warn("buildSelectColumns failed: " + sqle.getMessage());
+            Logger.error("buildSelectColumns failed: " + sqle.getMessage());
             Logger.trace(sqle);
         }
         String colStr = StringUtils.join(cols, ", ");

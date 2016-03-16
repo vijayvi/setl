@@ -22,6 +22,7 @@ import org.codehaus.jackson.annotate.*;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 import javax.annotation.Generated;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,6 +58,8 @@ public class Def {
     private int threads = 0;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    @JsonIgnore
+    private Path filePath;
 
     /**
      *
@@ -226,4 +229,13 @@ public class Def {
         this.additionalProperties.put(name, value);
     }
 
+    @JsonIgnore
+    public Path getFilePath() {
+        return filePath;
+    }
+
+    @JsonIgnore
+    public void setFilePath(Path filePath) {
+        this.filePath = filePath;
+    }
 }

@@ -37,6 +37,12 @@ public class SetlProcessor implements Runnable {
     final Status status;
     final Def def;
 
+    /**
+     * constructor
+     *
+     * @param status
+     * @param def
+     */
     public SetlProcessor(final Status status, final Def def) {
         this.status = status;
         this.def = def;
@@ -67,8 +73,13 @@ public class SetlProcessor implements Runnable {
         ch.stop();
     }
 
+    /**
+     * start extractor thread
+     *
+     * @return
+     */
     Thread startExtractor() {
-        Logger.info("starting Extractor thread");
+        Logger.info("Starting Extractor thread");
         Extractor extractor = new Extractor(queue, def, status, (result) -> {
             IntStream.range(0, getNumThreads()).forEach((i) -> addDoneRow());
         });
@@ -79,14 +90,22 @@ public class SetlProcessor implements Runnable {
         return et;
     }
 
+    /**
+     * adds DONE row to indicate the loader thread can end
+     */
     void addDoneRow() {
         try {
             queue.put(Row.DONE);
         } catch (InterruptedException ie) {}
     }
 
+    /**
+     * starts loader threads
+     *
+     * @return
+     */
     List<Thread> startLoaders() {
-        Logger.info("starting Loader threads. noOfThreads={}", getNumThreads());
+        Logger.info("Starting Loader threads. noOfThreads={}", getNumThreads());
         List<Thread> lts = new ArrayList<>();
         IntStream.range(0, getNumThreads()).forEach((i) -> {
             Loader loader = new Loader("l"+i, queue, status, def);
@@ -99,6 +118,11 @@ public class SetlProcessor implements Runnable {
         return lts;
     }
 
+    /**
+     * determines the number of threads from definition or default
+     *
+     * @return
+     */
     int getNumThreads() {
         if (def != null && def.getThreads() > 0) {
             return def.getThreads();

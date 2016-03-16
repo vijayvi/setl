@@ -41,13 +41,19 @@ public class RowSetUtilTest {
         assertEquals(jrs.getUrl(), "mysql-url");
         assertEquals(jrs.getUsername(), "root");
         assertEquals(jrs.getPassword(), "password");
+    }
 
+    @Test(expectedExceptions = {SQLException.class})
+    public void testGetRowSetExceptions() throws SQLException {
         util.rowSetFactory = mock(RowSetFactory.class);
         doThrow(SQLException.class).when(util.rowSetFactory).createJdbcRowSet();
-        jrs = util.getRowSet(dsTo);
+        JdbcRowSet jrs = util.getRowSet(dsTo);
         assertEquals(jrs, null, "exception");
+    }
 
-        jrs = util.getRowSet(null);
+    @Test(expectedExceptions = {SQLException.class})
+    public void testGetRowSetNull() throws SQLException {
+        JdbcRowSet jrs = util.getRowSet(null);
         assertEquals(jrs, null, "null");
     }
 

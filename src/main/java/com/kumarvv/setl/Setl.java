@@ -19,6 +19,7 @@
 package com.kumarvv.setl;
 
 import com.kumarvv.setl.core.SetlProcessor;
+import com.kumarvv.setl.model.DS;
 import com.kumarvv.setl.model.Def;
 import com.kumarvv.setl.model.Load;
 import com.kumarvv.setl.model.Status;
@@ -28,6 +29,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.pmw.tinylog.Logger;
 import org.pmw.tinylog.LoggingContext;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -44,13 +46,55 @@ public class Setl {
         try {
             Path path = Paths.get(filePath);
             final Def def = mapper.readValue(path.toFile(), Def.class);
+            def.setFilePath(path);
+
             initCsvPaths(def, path);
+
+            loadDataStores(def);
+
+            LoggingContext.put("def", StringUtils.defaultIfBlank(def.getName(), ""));
             return def;
         } catch (Exception e) {
             Logger.error("Invalid definition file: {}", e.getMessage());
             Logger.trace(e);
         }
         return null;
+    }
+
+    /**
+     * load dataSources from default db.json file when def file skips them
+     *
+     * @param def
+     */
+    protected void loadDataStores(final Def def) {
+        if (def == null || def.getFilePath() == null) {
+            return;
+        }
+
+        Path dbPath = def.getFilePath().resolveSibling("db.json");
+        if (dbPath == null || !dbPath.toFile().exists()) {
+            return;
+        }
+
+        try {
+            Def dbDef = new ObjectMapper().readValue(dbPath.toFile(), Def.class);
+
+            if (def.getFromDS() == null && dbDef.getFromDS() != null) {
+                def.setFromDS(new DS());
+                def.getFromDS().setUrl(dbDef.getFromDS().getUrl());
+                def.getFromDS().setUsername(dbDef.getFromDS().getUsername());
+                def.getFromDS().setPassword(dbDef.getFromDS().getPassword());
+            }
+            if (def.getToDS() == null && dbDef.getToDS() != null) {
+                def.setToDS(new DS());
+                def.getToDS().setUrl(dbDef.getToDS().getUrl());
+                def.getToDS().setUsername(dbDef.getToDS().getUsername());
+                def.getToDS().setPassword(dbDef.getToDS().getPassword());
+            }
+        } catch (Exception e) {
+            Logger.error("DB.json error: {}", e.getMessage());
+            // just ignore
+        }
     }
 
     /**
@@ -104,25 +148,72 @@ public class Setl {
         printStat(status);
     }
 
+    /**
+     * print stats every
+     * @param status
+     */
     protected void printStatEvery(Status status) {
         if (status.getRowsFound() % STATUS_EVERY == 0) {
             Logger.info("Found: {}, Processed: {}", status.getRowsFound(), status.getRowsProcessed());
         }
     }
 
+    /**
+     * print stats
+     * @param status
+     */
     protected void printStat(Status status) {
         Logger.info("Found: {}, Processed: {}", status.getRowsFound(), status.getRowsProcessed());
     }
 
-    public static void main(String[] args) {
-        Chrono kch = Chrono.start("all");
-        String defPath = "src/main/resources/test.json";
-//        String defPath = "src/main/resources/csv.json";
-//        String defPath = "/Users/Vijay/Dev/projects/ktacs/java/ktacs/setl/master/country.json";
+    /**
+     * check if valid file
+     *
+     * @param file
+     * @return
+     */
+    protected String getValidPath(final String file) {
+        if (StringUtils.isEmpty(file)) {
+            return null;
+        }
+        // mac ~ fix
+        String path = file.replaceFirst("^~", System.getProperty("user.home"));
 
+        File f = Paths.get(path).toFile();
+        if (!f.exists()) {
+            System.out.println("Invalid file path: " + f.getAbsolutePath());
+            return null;
+        }
+
+        LoggingContext.put("file", f.getName());
+        return f.getAbsolutePath();
+    }
+
+    /**
+     * main runner
+     * @param args
+     */
+    public static void main(String[] args) {
+        LoggingContext.put("def", "");
+        LoggingContext.put("load", "");
+        LoggingContext.put("file", "");
+
+        if (args == null || args.length == 0) {
+            Logger.error("Definition file (json) is missing");
+            return;
+        }
+
+        Chrono kch = Chrono.start("all");
         Setl me = new Setl();
-        Def def = me.loadFile(defPath);
-        me.start(def);
+        for (String file : args) {
+            String filePath = me.getValidPath(file);
+            if (StringUtils.isNotEmpty(filePath)) {
+                Logger.info("Processing definiton: " + file);
+                Def def = me.loadFile(filePath);
+                me.start(def);
+            }
+        }
+
         kch.stop();
         Logger.info("ALL DONE!");
     }

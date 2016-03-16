@@ -38,6 +38,11 @@ public class Transformer {
     protected Interpolator interpolator;
     protected SqlRunner sqlRunner;
 
+    /**
+     * constructor
+     *
+     * @param def
+     */
     public Transformer(final Def def) {
         this.def = def;
         this.cache = SetlCache.getInstance();

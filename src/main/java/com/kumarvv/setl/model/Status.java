@@ -69,10 +69,16 @@ public class Status {
         return c;
     }
 
-    public long incrementProcessed() {
+    public long incrementProcessed(boolean callback) {
         long c =  rowsProcessed.incrementAndGet();
-        onUpdateCallback();
+        if (callback) {
+            onUpdateCallback();
+        }
         return c;
+    }
+
+    public long incrementProcessed() {
+        return incrementProcessed(false);
     }
 
     public long incrementInserted() {
