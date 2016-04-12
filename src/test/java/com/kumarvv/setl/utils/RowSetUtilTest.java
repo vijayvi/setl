@@ -33,6 +33,8 @@ public class RowSetUtilTest {
         dsTo.setUrl("oracle-url");
         dsTo.setUsername("uid");
         dsTo.setPassword("pwd");
+
+        doReturn(true).when(util).loadDriver(any(DS.class));
     }
 
     @Test
@@ -97,5 +99,34 @@ public class RowSetUtilTest {
         jrs = null;
         result = util.getMetaColumns(jrs);
         assertEquals(result.size(), 0, "null2");
+    }
+
+    @Test
+    public void testLoadDriver() throws ClassNotFoundException {
+        doCallRealMethod().when(util).loadDriver(any(DS.class));
+
+        DS ds1 = new DS();
+        ds1.setUrl("jdbc:oracle:thin:@ora12c:1521:orcl");
+        boolean result = util.loadDriver(ds1);
+        assertEquals(result, true, "oracle");
+
+        DS ds2 = new DS();
+        ds2.setUrl("jdbc:mysql://localhost:3306/tacsp");
+        result = util.loadDriver(ds2);
+        assertEquals(result, true, "mysql");
+
+        DS ds3 = new DS();
+        ds3.setUrl("unknown-url");
+        result = util.loadDriver(ds3);
+        assertEquals(result, false, "unknown");
+
+        result = util.loadDriver(null);
+        assertEquals(result, false, "null");
+        result = util.loadDriver(new DS());
+        assertEquals(result, false, "null driver");
+
+        doThrow(ClassNotFoundException.class).when(util).loadDriverClass("com.mysql.jdbc.Driver");
+        result = util.loadDriver(ds2);
+        assertEquals(result, false, "exception");
     }
 }

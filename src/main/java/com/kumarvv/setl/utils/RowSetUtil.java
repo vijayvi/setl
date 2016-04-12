@@ -19,6 +19,7 @@
 package com.kumarvv.setl.utils;
 
 import com.kumarvv.setl.model.DS;
+import org.apache.commons.lang3.StringUtils;
 import org.pmw.tinylog.Logger;
 
 import javax.sql.rowset.JdbcRowSet;
@@ -48,6 +49,8 @@ public class RowSetUtil {
         if (rowSetFactory == null) {
             rowSetFactory = RowSetProvider.newFactory();
         }
+
+        loadDriver(ds);
 
         JdbcRowSet jrs = rowSetFactory.createJdbcRowSet();
         jrs.setUrl(ds.getUrl());
@@ -99,5 +102,33 @@ public class RowSetUtil {
             Logger.trace(sqle);
             return new HashMap<>();
         }
+    }
+
+    protected boolean loadDriver(DS ds) {
+        if (ds == null || StringUtils.isEmpty(ds.getUrl())) {
+            return false;
+        }
+
+        String driver = "";
+        if (ds.getUrl().contains("oracle")) {
+            driver = "oracle.jdbc.driver.OracleDriver";
+        } else if (ds.getUrl().contains("mysql")) {
+            driver = "com.mysql.jdbc.Driver";
+        } else {
+            Logger.error("Datasource vendor not supported: " + ds.getUrl());
+            return false;
+        }
+
+        try {
+            loadDriverClass(driver);
+        } catch (ClassNotFoundException cnfe) {
+            Logger.error("Oracle JDBC Driver could not be loaded: " + cnfe.getMessage());
+            return false;
+        }
+        return true;
+    }
+
+    protected void loadDriverClass(String driverClass) throws ClassNotFoundException {
+        Class.forName(driverClass);
     }
 }
