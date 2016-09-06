@@ -81,7 +81,18 @@ public class Setl {
 
         Path dbPath = def.getFilePath().resolveSibling("db.json");
         if (dbPath == null || !dbPath.toFile().exists()) {
-            return;
+            // resolve from parent folders
+            Path parent = def.getFilePath().getParent();
+            while (parent != null) {
+                dbPath = parent.resolveSibling("db.json");
+                if (dbPath != null && dbPath.toFile().exists()) {
+                    break;
+                }
+                parent = parent.getParent();
+            }
+            if (dbPath == null || !dbPath.toFile().exists()) {
+                return;
+            }
         }
 
         try {

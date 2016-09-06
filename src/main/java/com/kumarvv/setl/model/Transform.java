@@ -22,10 +22,7 @@ import org.codehaus.jackson.annotate.*;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 import javax.annotation.Generated;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
 @Generated("org.jsonschema2pojo")
@@ -35,7 +32,7 @@ import java.util.Set;
 public class Transform {
 
     @JsonProperty("columns")
-    private Set<Column> columns = new HashSet<>();
+    private List<Column> columns = new ArrayList<>();
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
@@ -45,7 +42,7 @@ public class Transform {
      * The columns
      */
     @JsonProperty("columns")
-    public Set<Column> getColumns() {
+    public List<Column> getColumns() {
         return columns;
     }
 
@@ -55,7 +52,7 @@ public class Transform {
      * The columns
      */
     @JsonProperty("columns")
-    public void setColumns(Set<Column> columns) {
+    public void setColumns(List<Column> columns) {
         this.columns = columns;
     }
 

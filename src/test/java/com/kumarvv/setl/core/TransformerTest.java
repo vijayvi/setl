@@ -45,7 +45,7 @@ public class TransformerTest {
         Column c2 = new Column();
         c2.setName("port_ref");
         c2.setSql("select id from ref where code = :ref");
-        Set<Column> cols = new HashSet<>(Arrays.asList(c1, c2));
+        List<Column> cols = Arrays.asList(c1, c2);
         doReturn(cols).when(transform).getColumns();
 
         Map<String, Object> row = new HashMap<>();

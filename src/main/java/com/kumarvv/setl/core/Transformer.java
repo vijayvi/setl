@@ -28,8 +28,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.pmw.tinylog.Logger;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class Transformer {
     private final Def def;
@@ -63,13 +63,13 @@ public class Transformer {
             return new HashMap<>();
         }
 
-        final Set<Column> columns = def.getTransform().getColumns();
+        final List<Column> columns = def.getTransform().getColumns();
         if (CollectionUtils.isEmpty(columns)) {
             Logger.trace("no columns in transform config");
             return new HashMap<>();
         }
 
-        columns.parallelStream().forEach(col -> transformSql(row, col));
+        columns.stream().forEach(col -> transformSql(row, col));
         return row;
     }
 

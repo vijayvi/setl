@@ -293,7 +293,7 @@ public class Loader implements Runnable {
             }
 
             jrs.insertRow();
-            jrs.first();
+            // jrs.first(); TODO check the need of first() method
             return true;
         } catch (SQLException sqle) {
             Logger.warn("insertRow failed: " + sqle.getMessage());
@@ -426,6 +426,7 @@ public class Loader implements Runnable {
             sql.append(StringUtils.join(nkStr, " AND "));
         }
 
+        Logger.debug("load={}, sqlExists={}", load.getTable(), sql.toString());
         return sql.toString();
     }
 
@@ -456,6 +457,7 @@ public class Loader implements Runnable {
             Logger.trace(sqle);
         }
         String colStr = StringUtils.join(cols, ", ");
+        Logger.debug("load={}, selectColumns={}", load.getTable(), sql.toString());
         return colStr;
     }
 }
